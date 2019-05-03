@@ -8,21 +8,21 @@ namespace adventuretimerough
 
         public static void Main(string[] args)
         {
-            //User Input that the game will accept:
-            List<string> validInputs = new List<string>()
-            {
-                "look", "pick up", "north", "south", "east", "west", "down",
-                    "inv", "help", "exit"
-            };
+
+            // Declare and assign lists for storing room info and the long description of each room.
+            // See the Room class for more information.
+
             List<string[]> LongDescList = new List<string[]>();
             List<Room> RoomList = new List<Room>();
-            List<string> Inventory = new List<string>();
+            
             for (int i = 0; i < 19; i++)
             {
                 LongDescList.Add(new string[6]);
                 RoomList.Add(new Room(i, LongDescList[i]));
             }
 
+            // Introductory text blurb for the start of a new game.
+            // Likely to be migrated out of main program once there is time for more cleanup.
             string[] introText = new string[]
             {
                 "You have spent the day climbing a rocky mountain to find an old mine you heard about in",
@@ -34,39 +34,62 @@ namespace adventuretimerough
                 " "
             };
 
-
-
-
-
-            LongDescList.Add(new string[6]);
-
-
-
-            Room ActiveRoom = new Room();
-
+            // Initializes the system for writing text to various parts of the UI and storing messages in
+            // a buffer as they are displayed to the player. Also responsible for throwing up the initial
+            // splash screen and drawing the game interface. See OutputHandler class for more information.
             Output.InitializeInterface();
 
+            // We use a dummy room called Activeroom that inherits the attributes of whichever room the
+            // the player is in through the SetIdentity() method. As the player moves, the ActiveRoom is
+            // updated with data based on the ID attribute of whichever room the player moves to.
+            Room ActiveRoom = new Room();
             ActiveRoom.SetIdentity(RoomList[0]);
 
-            string input;
+            // Creates a new Player object, displays some brief greetings, and gets starting conditions
+            // for the player.
             Player p = new Player();
+
+            // Declares the variable we use for inventory tracking and display throughout the course of
+            // normal gameplay.
+            List<string> Inventory = new List<string>();
+
+
+            // Writes the introductory text blurb, sets the ActiveRoom to the first room of the game,
+            // displays a short description and prompts the player to use their first command.
             Output.WriteLongMessage(introText);
             p.MoveTo(ActiveRoom.ID, ActiveRoom.ShortDesc);
             Output.WriteMessage("Have a look around? (type look)");
 
-            //Inventory.Add("towel");
 
-            Output.WriteInventory(Inventory);
+           // Declare variable used for player input, and the list of accepted input it will be checked
+           // against.
+            string input;
+            List<string> validInputs = new List<string>()
+            {
+                "look", "pick up", "north", "south", "east", "west", "down",
+                     "help", "exit"
+            };
 
+            // The main loop responsible for the game will continue to accept input and display text
+            // as long as the again variable is true; it is set to true until the player decides to exit
+            // or the main loop is broken by another condition.
+            // Main loop needs cleanup, bad!
             bool again = true;
-            //bool playerDied = false;
+            
             while (again)
             {
+                // These are things that need to be reset after each command entry:
+                //      - allowEntry checks the requiredToEnter attribute of each room & bounces player if they don't
+                //          have what they need to enter the room.
+                //      - ClearInputPrompt clears the last entry from the input prompt by overwriting it with " "
+                //          and resets the cursor position to the command prompt
+                //      - input takes user input, and is then parsed to lowercase and stored in tempLower
                 bool allowEntry = true;
                 Output.ClearInputPrompt();
                 input = Console.ReadLine();
                 string tempLower = input.ToLower();
 
+                // If the player gets killed by something, it is GAME OVER MAN!
                 if (p.isDead == true)
                 {
                     Output.WriteMessage("The mine has claimed another victim. Press any key to continue...");
@@ -74,6 +97,8 @@ namespace adventuretimerough
                     break;
                 }
 
+                // If the player makes it out alive, they get a little congratulatory message and the game quits.
+                // **TO DO: make winning a little more exciting.
                 if(ActiveRoom.ID == 18)
                 {
                     Output.WriteMessage("You are lucky - you managed to escape the mine with your life! Good job, and thanks");
@@ -81,6 +106,9 @@ namespace adventuretimerough
                     Console.ReadKey();
                     break;
                 }
+
+                // If it is too dark for the player to see inside the mine, and the player has not lit the torch yet, they do!
+                // ** consider moving this to another command that the player can enter.
                 if (Inventory.Contains("torch") && p.tooDarkToSee == true && p.TorchLit ==false)
                 {
                     p.TorchLit = true;
@@ -89,6 +117,8 @@ namespace adventuretimerough
 
                     Output.WriteLineBreak();
                 }
+
+                // If the player enters an invalid command, return an error and suggest looking at the valid commands.
                 if (!validInputs.Contains(tempLower))
                 {
                     Output.WriteMessage("Do what now? Type (help) for a list of valid commands");
@@ -96,7 +126,8 @@ namespace adventuretimerough
 
                 else
                 {
-
+                    // The player can get killed in a few different ways; this happens if they don't have the sword when they need it.
+                    // **implement combat minigame?
                     if (ActiveRoom.ID == 13)
                     {
                         if (!Inventory.Contains("sword"))
@@ -110,6 +141,8 @@ namespace adventuretimerough
                         }
                     }
 
+                    // the "look" command will usually provide the long description of a room, unless it is too dark to see and
+                    // they player does not have a lit torch.
                     if (tempLower == "look")
                     {
 
@@ -125,33 +158,24 @@ namespace adventuretimerough
 
                         Output.WriteLineBreak();
 
+
+                        // Another way the player can meet an unpleasant end...
                         if(ActiveRoom.ID == 9)
                         {
                             p.isDead = true;
                         }
+
+                        // If the current room has loot the player can grab, give them a little prod to pick it up.
                         if (ActiveRoom.Loot != null)
                         {
                             Output.WriteMessage("There is a {0} here.", ActiveRoom.Loot);
                             Output.WriteMessage("Do you want to (pick up) the {0}?", ActiveRoom.Loot);
                         }
-                        /*if (ActiveRoom.RoomToNorth > 0)
-                        {
-                            Output.WriteMessage("to the (north), a faint light");
-                        }
-                        if (ActiveRoom.RoomToSouth > 0)
-                        {
-                            Output.WriteMessage("to the (south), is that something moving?");
-                        }
-                        if (ActiveRoom.RoomToEast > 0)
-                        {
-                            Output.WriteMessage("to the (east), a low grinding rumble");
-                        }
-                        if (ActiveRoom.RoomToWest > 0)
-                        {
-                            Output.WriteMessage("to the (west), somethings smells... good?");
-                        }*/
                     }
 
+                    // "north", "south, "east" and "west" all move the player after checking to see that they meet
+                    // the entry requirements and that there is actually a room to move to. If not, an error is displayed.
+                    // ** update failure to meet entry requirements text.
                     if (tempLower == "north")
                     {
 
@@ -172,7 +196,7 @@ namespace adventuretimerough
                                 {
                                     if (ActiveRoom.RoomToNorth == aRoom.ID)
                                     {
-                                        //Console.Write(aRoom.ID);
+                                        //Console.Write(aRoom.ID); --debug usage
                                         ActiveRoom.SetIdentity(aRoom);
                                         break;
                                     }
@@ -191,7 +215,6 @@ namespace adventuretimerough
                     {
                         if (ActiveRoom.RoomToSouth > 0)
                         {
-                            //bool allowEntry = true;
                             if (RoomList[ActiveRoom.RoomToSouth].RequiredToEnter != null)
                             {
                                 if (!Inventory.Contains(RoomList[ActiveRoom.RoomToSouth].RequiredToEnter))
@@ -224,7 +247,7 @@ namespace adventuretimerough
                     {
                         if (ActiveRoom.RoomToEast > 0)
                         {
-                            //bool allowEntry = true;
+                          
 
                             if (RoomList[ActiveRoom.RoomToEast].RequiredToEnter != null)
                             {
@@ -259,7 +282,6 @@ namespace adventuretimerough
                     {
                         if (ActiveRoom.RoomToWest > 0)
                         {
-                            //bool allowEntry = true;
                             if (RoomList[ActiveRoom.RoomToWest].RequiredToEnter != null)
                             {
                                 if (!Inventory.Contains(RoomList[ActiveRoom.RoomToWest].RequiredToEnter))
@@ -289,6 +311,9 @@ namespace adventuretimerough
                         }
                     }
 
+                    // "pick up" adds the loot in the current room to the player's inventory and removes it from
+                    // ActiveRoom as well as the associated Room object so it does not respawn later.
+                    // **TO DO - update the description text to reflect that the object is gone.
                     if (tempLower == "pick up")
                     {
                         if (ActiveRoom.Loot != null)
@@ -296,6 +321,7 @@ namespace adventuretimerough
                             Output.WriteMessage("You pick up the {0}", ActiveRoom.Loot);
                             Inventory.Add(ActiveRoom.Loot);
                             ActiveRoom.Loot = null;
+                            RoomList[ActiveRoom.ID].Loot = null;
                             Output.WriteMessage("Cool!");
                             Output.WriteInventory(Inventory);
                         }
@@ -306,6 +332,8 @@ namespace adventuretimerough
                         Output.WriteLineBreak();
                     }
 
+                    // There are 3 levels to the dungeon; if the player is in the correct room, they can use
+                    // "down" to progress to the next floor. It is a one way trip...
                     if (tempLower == "down")
                     {
                         switch (ActiveRoom.ID)
@@ -353,7 +381,7 @@ namespace adventuretimerough
                                 }
                                 else
                                 {
-                                    Output.WriteMessage("You can't climb down safely without                a some rope");
+                                    Output.WriteMessage("You can't climb down safely without some rope!");
                                 }
                                 break;
 
@@ -364,6 +392,7 @@ namespace adventuretimerough
                         }
                     }
 
+                    // "inv" displays your inventory. deprecated since it has been added to UI.
                     if (tempLower == "inv")
                     {
                         Output.WriteMessage("you have: ");
@@ -373,7 +402,7 @@ namespace adventuretimerough
                         }
                     }
 
-
+                    // It gets dark sometimes in the mines... hopefully the player is ready.
                     if (ActiveRoom.ID == 7 && p.TorchLit == false)
                     {
                         Output.WriteMessage("A huge crash startles you as rubble fills the passage you came");
@@ -382,17 +411,19 @@ namespace adventuretimerough
                         Output.WriteLineBreak();
                         p.tooDarkToSee = true;
                     }
+
+                    // "help" writes a list of valid commands if the player is stuck
                     if (tempLower == "help")
                     {
                         Output.WriteMessage("Valid commands:");
-                        // Output.WriteMessage("For now try typing:\n north,\n south,\n east,\n" +
-                        //    "west,\n pick up,\n exit,\n inv,\n help");
                         foreach (string command in validInputs)
                         {
                             Output.WriteMessage(" - {0}", command);
                         }
                         Output.WriteLineBreak();
                     }
+
+                    //"exit" quits the game
                     if (tempLower == "exit")
                     {
                         again = false;

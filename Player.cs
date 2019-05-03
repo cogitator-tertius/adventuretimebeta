@@ -28,7 +28,7 @@ namespace adventuretimerough
 
         // The constructor for the Player class. Calls SetPlayerName to request
         // user input for the player name and display a greeting. Also sets the
-        // starting Room, move count, and TorchLit status.
+        // starting Room, move count, isDead, tooDarkToSee, and TorchLit status.
         public Player()
         {
             SetPlayerName();
@@ -66,10 +66,10 @@ namespace adventuretimerough
             }
         }
         // Called as part of moving to a new Room, increments the number of moves
-        // taken during the game and updates the Location of the Player. If the 
-        // player enters the room that begins the remaining move countdown, it sets
-        // the cutoff for maximum moves. MoveLimitActive is set to true to prevent
-        // moving back to the triggering room resetting the move limit.
+        // taken during the game and updates the Location of the Player. Displays
+        // a short message indicating the player has moved, then displays the short
+        // room description unless it is too dark, the starting room, or the torch
+        // is lit.
         public void MoveTo(int newRoomID, string newRoomShortDesc)
         {
             Location = newRoomID;
@@ -91,60 +91,7 @@ namespace adventuretimerough
                 Output.WriteMessage("You can't see anything! If only you had a light source...");
             }
 
-            //Output.NewRoomText(newRoomID, newRoomShortDesc);
         }
 
-        //public void MoveNorth()
-        //{
-        //    if (CurrentLocation.RoomToNorth != null)
-        //    {
-        //        MoveTo(CurrentLocation.RoomToNorth);
-
-        //        //Console.WriteLine(CurrentLocation.ShortDesc);
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("you cannot go that way");
-        //    }
-        //}
-
-        //public void MoveSouth()
-        //{
-        //    if (CurrentLocation.RoomToSouth != null)
-        //    {
-        //        MoveTo(CurrentLocation.RoomToSouth);
-        //        //Console.WriteLine(CurrentLocation.ShortDesc);
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("you cannot go that way");
-        //    }
-        //}
-
-        //public void MoveEast()
-        //{
-        //    if (CurrentLocation.RoomToEast != null)
-        //    {
-        //        MoveTo(CurrentLocation.RoomToEast);
-        //        //Console.WriteLine(CurrentLocation.ShortDesc);
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("you cannot go that way");
-        //    }
-        //}
-
-        //public void MoveWest()
-        //{
-        //    if (CurrentLocation.RoomToWest != null)
-        //    {
-        //        MoveTo(CurrentLocation.RoomToWest);
-        //        //Console.WriteLine(CurrentLocation.ShortDesc);
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("you cannot go that way");
-        //    }
-        //}
     }
 }

@@ -8,6 +8,7 @@ namespace adventuretimerough
     public class Room
     {
         /*Room objects have the following attributes:
+         * Name - the name that is displayed in the "You are in:" element of the UI.
          * ID - unique identifier used for movement system and attribute generation.
          * ShortDesc - the text that is displayed when the player enters the room.
          * LongDesc - the text that is displayed when the player enters the 'look' command.
@@ -20,7 +21,6 @@ namespace adventuretimerough
         public string Name;
         public int ID { get; set; }
         public string ShortDesc { get; set; }
-        // may need to switch LongDesc to an array to get it to play nice with WriteMessage
         public string[] LongDesc;
         public string Loot { get; set; }
         public int RoomToNorth { get; set; }
@@ -424,11 +424,12 @@ namespace adventuretimerough
                     break;
             }
         }
+
         /* SetIdentity is used to update the ActiveRoom attributes to match the destination 
            Room when the player moves to a Room. It sets each attribute to the destination 
            Room's attributes, which are passed as targetRoom. Next, it clears the output 
            window of the old room's text and resets the line counter used to write room text.
-           Finally, it calls the WriteRoomExits method of Output to update the valid 
+           Finally, it calls the UpdateRoomInfo method in this class to update the valid 
            exits that are displayed in the interface. */
         public void SetIdentity(Room targetRoom)
         {
@@ -447,8 +448,7 @@ namespace adventuretimerough
         }
 
         // Determines whether the "rope" Loot is spawned in the Room where
-        // it may appear in each game. "rope" allows the player to use a 
-        // shortcut to reach the exit and bypass some Rooms during the game.
+        // it may appear in each game.
         public bool DoesRopeSpawn()
         {
             //bool result;
@@ -458,10 +458,12 @@ namespace adventuretimerough
             else { return false; }
         }
 
-        // WriteRoomExits is called as part of the SetIdentity method.
+        // UpdateRoomInfo is called as part of the SetIdentity method.
         // It passes a string type array to Output.WriteValidMoves
         // that indicates which directions are valid movement choices from
         // a given room, and overwrites exits that are not valid anymore.
+        // Finally it updates the Room name in the UI element.
+
         public void UpdateRoomInfo(Room targetRoom)
         {
             string[] nsew = { " ", "  " , "  " , "  " };
@@ -477,18 +479,6 @@ namespace adventuretimerough
             Output.WriteRoomName(targetRoom.Name);
         }
     }
-
-    //public static Room RoomByID(int id)
-    //{
-    //    foreach (Room room in Rooms)
-    //    {
-    //        if (room.ID == id)
-    //        {
-    //            return room;
-    //        }
-    //    }
-    //    return null;
-    //}
 
 }
 

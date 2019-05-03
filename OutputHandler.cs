@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace adventuretimerough
 {
-
     public static class Output
     {
         private static int Origin_X;
@@ -88,6 +87,9 @@ namespace adventuretimerough
 
 
 ";
+            // Output uses a series of predefined coordinates that correspond with Col, Row to write text
+            // to the UI. They are set here at runtime, along with other necessary informations such as
+            // the number of lines in the message buffer, max string lengths, and window sizes.
         static Output()
         {
             Console.SetWindowSize(120, 33);
@@ -111,7 +113,7 @@ namespace adventuretimerough
             CmdLineWidth = MessageWindowSize[0] - 40;
             save = 's';
             recall = 'r';
-            //newLineMarker = ">";
+            //newLineMarker = ">"; implement this later
         }
         
         // InitializeInterface sets the origin coordinates used for all Output methods.
@@ -150,6 +152,7 @@ namespace adventuretimerough
             }
         }
 
+        // currently unused overload for WriteAt
         //public static void WriteAt(int[] X_Y_Coords, string text, string ref1)
         //{
         //    X_Y_Coords[0] = -1;
@@ -159,7 +162,7 @@ namespace adventuretimerough
 
         // The WriteValidMoves method is called as part of the movement tracking system,
         // and updates the exits displayed when the player moves to a new room. It is called
-        // during Room. SetIdentity method and accepts a string array that contains text
+        // during Room.UpdateInfo method and accepts a string array that contains text
         // identifying which exits are valid. The cursor position is saved, then moved to saved 
         // coordinates for the interface element that shows which moves are valid before
         // writing the moves which are legal from a given room before returning the cursor to
@@ -194,7 +197,8 @@ namespace adventuretimerough
             WriteAt(CmdLineCoords, "");
         }
 
-        public static void ClearRoomText()
+        /* Method to clear buffer, currently unused, 
+         * public static void ClearRoomText()
         {
             Array.Copy(MessageOutputCoords, CurrentCoords, 2);
             for (int i = 0; i < MessageWindowSize[1]; i++)
@@ -204,7 +208,10 @@ namespace adventuretimerough
             }
             Array.Copy(MessageOutputCoords, CurrentCoords, 2);
         }
+        */
 
+        // WriteMessage gets the saved line number, and then either writes the next line
+        // or updates the buffer to move all the text up in the UI and then writes the next line.
         public static void WriteMessage(string outputText)
         {
             CursorLine(recall);
@@ -230,7 +237,8 @@ namespace adventuretimerough
             }
             CursorLine(save);
         }
-
+        
+        // Overloads for WriteMessage that behave like Console.Write
         public static void WriteMessage(string outputText, string ref1)
         {
             string format = String.Format(outputText, ref1);
@@ -257,19 +265,14 @@ namespace adventuretimerough
             }
         }
 
+        // Writes a blank line in the message window, useful to break up chunks of text.
         public static void WriteLineBreak()
         {
             WriteMessage(blankline);
         }
 
-        public static void NewRoomText(int newRoomID, string outputText)
-        {
-            Array.Copy(MessageOutputCoords, CurrentCoords, 2);
-            WriteAt(CurrentCoords, outputText);
-            OutPutBuffer[0] = outputText;
-            CursorLine(save);
-        }
-
+        // Displays the inventory items the player has. Called when the player uses the
+        // "pick up" command.
         public static void WriteInventory(List<string> Inventory)
         {
             int i = 2;
@@ -283,6 +286,7 @@ namespace adventuretimerough
             InventoryCoords[1] = 7;
         }
 
+        // Writes the new room name whenever the player moves.
         public static void WriteRoomName(string roomName)
         {
             WriteAt(RoomNameCoords, blankLineRoom);
