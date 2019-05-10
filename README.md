@@ -1,4 +1,4 @@
-# adventuretimebeta
+# AdventureTime - Beta
 Beta version of a text-based adventure in the style of Zork, etc
 
 Enter the mysterious, dangerous depths of an old mine and test fate to see if you can make it out alive!
